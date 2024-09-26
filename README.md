@@ -5,6 +5,11 @@
 - One Need to have $ETH on eclipse mainnet
 - You can bridge from [official bridge](https://bridge.eclipse.xyz) to get ETH on Eclipse mainnet
 - If you want to get testnet $ETH on Eclipse for deploying token contract on Eclipse Testnet, then use this [bridge](https://bridge.validators.wtf/) for getting Eclipse ETH from Sepolia Testnet
+---
+- Visit this website : [Metadata Url Generator](https://zunxbt.github.io/Eclipse/)
+- Enter your `token name`, `token symbol`, `Description` and then `upload a pic` for your token
+- You will get an url, copy and save it
+- Also during script execution, it will ask `token name` and `token symbol`, use the same symbol and name u used in the above website
 
 ## Important Info
 - If you chose to `create new wallet` , **it will ask you enter to `Passphrase`**. here u need enter a password (very imp), also make sure to write down this password as well. It will show your wallet mnemonic phrase, public key write it down, at last after contract deployment, use this command
