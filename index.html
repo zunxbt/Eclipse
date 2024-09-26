@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eclipse Token Metadata Generator By ZunXBT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 2em; 
+            text-align: center;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"], 
+        textarea, 
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #rounding-buffer {
+            display: none;
+            border: 6px solid #4CAF50;
+            border-radius: 50%;
+            border-top: 6px solid transparent;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        #metadata-url {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            max-width: 90%;
+            overflow-wrap: break-word;
+            margin-top: 10px;
+        }
+
+        .celebrate {
+            animation: celebrate 2s ease-in-out;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .twitter-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .twitter-link img {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em; 
+            }
+            form {
+                padding: 15px;
+            }
+            input[type="text"], 
+            textarea, 
+            input[type="file"], 
+            button {
+                padding: 8px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1> Metadata Generator</h1>
+    <form id="metadata-form">
+        <label for="name">Token Name:</label><br>
+        <input type="text" id="name" required><br><br>
+
+        <label for="symbol">Token Symbol:</label><br>
+        <input type="text" id="symbol" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" rows="4" required></textarea><br><br>
+
+        <label for="pfp">Upload Image (max 1MB):</label><br>
+        <input type="file" id="pfp" accept="image/*" required><br><br>
+
+        <button type="submit">Generate Metadata</button>
+    </form>
+
+    <div id="rounding-buffer"></div>
+    <p id="metadata-url"></p>
+
+    <div class="twitter-link">
+        <a href="https://x.com/zunxbt" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg" alt="Twitter Logo">
+            @ZunXBT
+        </a>
+    </div>
+
+    <!-- Pinata SDK (via CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        const pinataApiKey = 'b1559858f9c9e6dcfdeb';
+        const pinataSecretApiKey = '735d1afb6e2b6b40256d33690b54ee3d82506c0b469d808ab5c81cf1aacb8a4a';
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function validateFileSize(file) {
+            const maxSizeInBytes = 1 * 1024 * 1024;
+            return file.size <= maxSizeInBytes;
+        }
+
+        document.getElementById('metadata-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const symbol = document.getElementById('symbol').value;
+            const description = document.getElementById('description').value;
+            const pfpFile = document.getElementById('pfp').files[0];
+
+            if (!pfpFile) {
+                alert('Please upload a PFP image.');
+                return;
+            }
+
+            if (!validateFileSize(pfpFile)) {
+                alert('The uploaded image exceeds the 1MB size limit.');
+                return;
+            }
+
+            document.getElementById('rounding-buffer').style.display = 'block';
+
+            const imageFormData = new FormData();
+            imageFormData.append('file', pfpFile);
+
+            let imageCID;
+            try {
+                const imageResponse = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', imageFormData, {
+                    maxBodyLength: 'Infinity',
+                    headers: {
+                        'Content-Type': `multipart/form-data`,
+                        'pinata_api_key': pinataApiKey,
+                        'pinata_secret_api_key': pinataSecretApiKey
+                    }
+                });
+                imageCID = imageResponse.data.IpfsHash;
+            } catch (error) {
+                console.error('Error uploading image to Pinata:', error);
+                alert('Failed to upload image to Pinata.');
+                return;
+            }
+
+            const metadata = {
+                name: name,
+                symbol: symbol,
+                description: `${description}, Guide by Zun : https://x.com/ZunXBT`,
+                image: `https://gateway.pinata.cloud/ipfs/${imageCID}`
+            };
+
+            try {
+                const metadataResponse = await axios.post('https://api.pinata.cloud/pinning/pinJSONToIPFS', metadata, {
+                    headers: {
+                        'pinata_api_key': pinataApiKey,
+                        'pinata_secret_api_key': pinataSecretApiKey
+                    }
+                });
+
+                const metadataCID = metadataResponse.data.IpfsHash;
+                const metadataUrl = `https://gateway.pinata.cloud/ipfs/${metadataCID}`;
+
+                document.getElementById('rounding-buffer').style.display = 'none';
+                const metadataUrlElement = document.getElementById('metadata-url');
+                metadataUrlElement.textContent = `Metadata URL: ${metadataUrl}`;
+                metadataUrlElement.style.opacity = '1';
+                metadataUrlElement.classList.add('celebrate');
+            } catch (error) {
+                console.error('Error uploading metadata to Pinata:', error);
+                alert('Failed to upload metadata to Pinata.');
+            }
+        });
+    </script>
+</body>
+</html>
