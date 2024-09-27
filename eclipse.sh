@@ -10,14 +10,17 @@ install_solana() {
     if ! command -v solana &> /dev/null; then
         show "Solana not found. Installing Solana..."
         sh -c "$(curl -sSfL https://release.solana.com/v1.18.18/install)"
-        if ! grep -q 'solana' ~/.bashrc; then
-            echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.bashrc
-            show "Added Solana to PATH in .bashrc. Please restart your terminal or run 'source ~/.bashrc' to apply the changes."
-        fi
-        export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
     else
         show "Solana is already installed."
     fi
+
+    if ! grep -q "$HOME/.local/share/solana/install/active_release/bin" ~/.bashrc; then
+        echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.bashrc
+        show "Added Solana to PATH in .bashrc. Please restart your terminal or run 'source ~/.bashrc' to apply the changes."
+    fi
+
+    export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+    show "Solana PATH exported for the current session."
 }
 
 setup_wallet() {
