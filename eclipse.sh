@@ -20,7 +20,6 @@ install_solana() {
     fi
 }
 
-
 setup_wallet() {
     KEYPAIR_DIR="$HOME/solana_keypairs"
     mkdir -p "$KEYPAIR_DIR"
@@ -54,9 +53,10 @@ setup_wallet() {
         esac
     done
 
+    solana config set --keypair "$KEYPAIR_PATH"
+
     show "Wallet setup completed!"
 }
-
 
 setup_network() {
     show "Do you want to deploy on the mainnet or testnet?"
@@ -80,14 +80,19 @@ setup_network() {
 
     show "Setting Solana config..."
     solana config set --url "$NETWORK_URL"
-    solana config set --keypair "$KEYPAIR_PATH"
     
     show "Network setup completed!"
 }
 
-
 create_spl_and_operations() {
     show "Creating SPL token..."
+    
+    # Ensure a keypair is set in Solana CLI config before creating the token
+    if ! solana config get | grep -q "Keypair Path:"; then
+        show "Error: No keypair is set in Solana config. Exiting."
+        exit 1
+    fi
+
     spl-token create-token --enable-metadata -p TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
     if [[ $? -ne 0 ]]; then
         show "Failed to create SPL token. Exiting."
@@ -97,7 +102,7 @@ create_spl_and_operations() {
     read -p "Enter the token address you found above: " TOKEN_ADDRESS
     read -p "Enter your token symbol (e.g., ZUNXBT): " TOKEN_SYMBOL
     read -p "Enter your token name (e.g., Zenith Token): " TOKEN_NAME
-    read -p "Enter your token metadata url : " METADATA_URL
+    read -p "Enter your token metadata url: " METADATA_URL
 
     show "Initializing token metadata..."
     spl-token initialize-metadata "$TOKEN_ADDRESS" "$TOKEN_NAME" "$TOKEN_SYMBOL" "$METADATA_URL"
@@ -122,7 +127,6 @@ create_spl_and_operations() {
 
     show "Token operations completed successfully!"
 }
-
 
 main_menu() {
     while true; do
