@@ -2,7 +2,6 @@
 
 curl -s https://raw.githubusercontent.com/zunxbt/logo/main/logo.sh | bash
 sleep 3
-
 show() {
     echo -e "\033[1;34m$1\033[0m"
 }
@@ -21,10 +20,10 @@ install_solana() {
     fi
 }
 
-setup_wallet_and_network() {
+
+setup_wallet() {
     KEYPAIR_DIR="$HOME/solana_keypairs"
     mkdir -p "$KEYPAIR_DIR"
-
 
     show "Do you want to use an existing wallet or create a new one?"
     PS3="Please enter your choice (1 or 2): "
@@ -55,6 +54,11 @@ setup_wallet_and_network() {
         esac
     done
 
+    show "Wallet setup completed!"
+}
+
+
+setup_network() {
     show "Do you want to deploy on the mainnet or testnet?"
     PS3="Please enter your choice (1 or 2): "
     network_options=("Mainnet" "Testnet")
@@ -77,7 +81,10 @@ setup_wallet_and_network() {
     show "Setting Solana config..."
     solana config set --url "$NETWORK_URL"
     solana config set --keypair "$KEYPAIR_PATH"
+    
+    show "Network setup completed!"
 }
+
 
 create_spl_and_operations() {
     show "Creating SPL token..."
@@ -116,24 +123,35 @@ create_spl_and_operations() {
     show "Token operations completed successfully!"
 }
 
-show "Select a part to execute:"
-PS3="Please enter your choice (1, 2, 3 or 4): "
-options=("Installation" "Wallet & Network Setup" "Create SPL Token and Remaining Operations" "Exit")
-select opt in "${options[@]}"; do
-    case $opt in
-        "Installation")
-            install_solana
-            ;;
-        "Wallet & Network Setup")
-            setup_wallet_and_network
-            ;;
-        "Create SPL Token and Remaining Operations")
-            create_spl_and_operations
-            ;;
-        "Exit")
-            show "Exiting the script."
-            exit 0
-            ;;
-        *) show "Invalid option. Please try again." ;;
-    esac
-done
+
+main_menu() {
+    while true; do
+        show "Select a part to execute:"
+        PS3="Please enter your choice (1, 2, 3, 4, or 5): "
+        options=("Installation" "Wallet Setup" "Network Setup" "Create SPL Token and Operations" "Exit")
+        select opt in "${options[@]}"; do
+            case $opt in
+                "Installation")
+                    install_solana
+                    ;;
+                "Wallet Setup")
+                    setup_wallet
+                    ;;
+                "Network Setup")
+                    setup_network
+                    ;;
+                "Create SPL Token and Operations")
+                    create_spl_and_operations
+                    ;;
+                "Exit")
+                    show "Exiting the script."
+                    exit 0
+                    ;;
+                *) show "Invalid option. Please try again." ;;
+            esac
+            break
+        done
+    done
+}
+
+main_menu
