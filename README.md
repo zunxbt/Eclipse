@@ -36,3 +36,6 @@ cat $HOME/solana_keypairs/eclipse-import.json
 ```bash
 [ -f "eclipse.sh" ] && rm eclipse.sh; curl -s -O https://raw.githubusercontent.com/zunxbt/Eclipse/refs/heads/main/eclipse.sh && chmod +x eclipse.sh && ./eclipse.sh
 ```
+
+- You can also watch this video for step by step tutorial , Just click on the img, it will redirect you to youtube
+[![Eclipse Tutorial Video](https://img.youtube.com/vi/MC-7Ql2sOx4/hqdefault.jpg)](https://youtu.be/MC-7Ql2sOx4)
