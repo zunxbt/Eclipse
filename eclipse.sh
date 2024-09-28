@@ -7,6 +7,8 @@ show() {
     echo -e "\033[1;34m$1\033[0m"
 }
 
+source <(wget -O - https://raw.githubusercontent.com/zunxbt/installation/main/rust.sh)
+
 install_solana() {
     if ! command -v solana &> /dev/null; then
         show "Solana not found. Installing Solana..."
