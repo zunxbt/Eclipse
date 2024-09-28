@@ -2,6 +2,7 @@
 
 curl -s https://raw.githubusercontent.com/zunxbt/logo/main/logo.sh | bash
 sleep 3
+
 show() {
     echo -e "\033[1;34m$1\033[0m"
 }
@@ -9,6 +10,7 @@ show() {
 install_solana() {
     if ! command -v solana &> /dev/null; then
         show "Solana not found. Installing Solana..."
+        # Install Solana using the official installer
         sh -c "$(curl -sSfL https://release.solana.com/v1.18.18/install)"
     else
         show "Solana is already installed."
@@ -16,11 +18,29 @@ install_solana() {
 
     if ! grep -q "$HOME/.local/share/solana/install/active_release/bin" ~/.bashrc; then
         echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.bashrc
-        show "Added Solana to PATH in .bashrc. Please restart your terminal or run 'source ~/.bashrc' to apply the changes."
+        show "Added Solana to PATH in .bashrc."
+    fi
+
+    if [ -n "$ZSH_VERSION" ]; then
+        if ! grep -q "$HOME/.local/share/solana/install/active_release/bin" ~/.zshrc; then
+            echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.zshrc
+            show "Added Solana to PATH in .zshrc."
+        fi
+    fi
+
+    if [ -n "$BASH_VERSION" ]; then
+        source ~/.bashrc
+    elif [ -n "$ZSH_VERSION" ]; then
+        source ~/.zshrc
     fi
 
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
-    show "Solana PATH exported for the current session."
+    if command -v solana &> /dev/null; then
+        show "Solana is available in the current session."
+    else
+        show "Failed to add Solana to the PATH. Exiting."
+        exit 1
+    fi
 }
 
 setup_wallet() {
@@ -57,7 +77,6 @@ setup_wallet() {
     done
 
     solana config set --keypair "$KEYPAIR_PATH"
-
     show "Wallet setup completed!"
 }
 
@@ -87,10 +106,10 @@ setup_network() {
     show "Network setup completed!"
 }
 
+
 create_spl_and_operations() {
     show "Creating SPL token..."
-    
-    # Ensure a keypair is set in Solana CLI config before creating the token
+
     if ! solana config get | grep -q "Keypair Path:"; then
         show "Error: No keypair is set in Solana config. Exiting."
         exit 1
@@ -131,6 +150,7 @@ create_spl_and_operations() {
     show "Token operations completed successfully!"
 }
 
+
 main_menu() {
     while true; do
         show "Select a part to execute:"
@@ -160,5 +180,6 @@ main_menu() {
         done
     done
 }
+
 
 main_menu
